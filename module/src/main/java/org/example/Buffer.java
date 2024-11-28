@@ -1,4 +1,4 @@
-package org.example.cms;
+package org.example;
 
 public interface Buffer<T> {
 
@@ -12,8 +12,9 @@ public interface Buffer<T> {
     void carregaBuffer();
 
     // Escreve os dados do buffer no arquivo, caso seja um buffer de escrita
-    void escreveBuffer();
+    void escreveBufferNoArquivo();
 
     // Desassocia o buffer e fecha o arquivo
     void fechaBuffer();
+
 }

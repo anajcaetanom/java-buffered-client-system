@@ -1,4 +1,5 @@
-package org.example.cms;
+package org.example;
+
 
 import java.io.*;
 import java.util.ArrayList;
@@ -8,43 +9,59 @@ public class ArquivoCliente implements ArquivoSequencial<Cliente> {
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
     private File file;
-    
+
     @Override
-    public void abrirArquivo(String nomeDoArquivo, String modoDeLeitura, Class<Cliente> classeBase) throws IOException {
+    public void abrirArquivo(String nomeDoArquivo, String modoDeLeitura, Class<Cliente> classeBase) throws IOException{
         this.file = new File(nomeDoArquivo);
-        
+
         if (modoDeLeitura.equals("leitura")) {
+            // Inicia o arquivo em modo de leitura
+
             if (file.exists()) {
+            // Verifica se o arquivo existe
+
                 inputStream = new ObjectInputStream(new FileInputStream(file));
+
             } else {
                 throw new FileNotFoundException("Arquivo não encontrado.");
             }
         } else if (modoDeLeitura.equals("escrita")) {
+            // Inicia o arquivo em modo de escrita
+
             outputStream = new ObjectOutputStream(new FileOutputStream(file));
+
         } else if (modoDeLeitura.equals("leitura/escrita")) {
-            // Para leitura/escrita, abrir ambos os streams
-            if (file.exists()) {
-                inputStream = new ObjectInputStream(new FileInputStream(file));
+            // Para leitura/escrita, abrir ambos os stream
+
+            if (file.exists()){
+            // Verifica se o arquivo existe
+
+               inputStream = new ObjectInputStream(new FileInputStream(file));
+
             }
-            outputStream = new ObjectOutputStream(new FileOutputStream(file, true)); // Modo append
-        } else {
-            throw new IllegalArgumentException("Modo de leitura inválido.");
+
+            outputStream =  new ObjectOutputStream(new FileOutputStream(file, true));
+
+        } else{
+
+            throw new IllegalArgumentException();
+
         }
     }
 
     @Override
-    public List<Cliente> leiaDoArquivo(int numeroDeRegistros) throws IOException, ClassNotFoundException {
+    public List<Cliente> lerRegistrosArquivo(int numeroRegistros) throws IOException, ClassNotFoundException {
         List<Cliente> registros = new ArrayList<>();
-        
+
         try {
-            for (int i = 0; i < numeroDeRegistros; i++) {
+            for (int i = 0; i < numeroRegistros; i++) {
                 Cliente cliente = (Cliente) inputStream.readObject();
                 registros.add(cliente);
             }
         } catch (EOFException e) {
-            // Final do arquivo atingido, retornando o que foi lido até agora
+
         }
-        
+
         return registros;
     }
 
@@ -56,10 +73,11 @@ public class ArquivoCliente implements ArquivoSequencial<Cliente> {
     }
 
     @Override
-    public void fechaArquivo() throws IOException {
+    public void fecharArquivo() throws IOException {
         if (inputStream != null) {
             inputStream.close();
         }
+
         if (outputStream != null) {
             outputStream.close();
         }
