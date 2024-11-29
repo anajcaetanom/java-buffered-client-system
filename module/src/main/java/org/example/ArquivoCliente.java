@@ -14,38 +14,30 @@ public class ArquivoCliente implements ArquivoSequencial<Cliente> {
     public void abrirArquivo(String nomeDoArquivo, String modoDeLeitura, Class<Cliente> classeBase) throws IOException{
         this.file = new File(nomeDoArquivo);
 
+        // Inicia o arquivo em modo de leitura
         if (modoDeLeitura.equals("leitura")) {
-            // Inicia o arquivo em modo de leitura
-
             if (file.exists()) {
-            // Verifica se o arquivo existe
-
                 inputStream = new ObjectInputStream(new FileInputStream(file));
-
             } else {
                 throw new FileNotFoundException("Arquivo não encontrado.");
             }
-        } else if (modoDeLeitura.equals("escrita")) {
-            // Inicia o arquivo em modo de escrita
+        }
 
+        // Inicia o arquivo em modo de leitura
+        else if (modoDeLeitura.equals("escrita")) {
             outputStream = new ObjectOutputStream(new FileOutputStream(file));
+        }
 
-        } else if (modoDeLeitura.equals("leitura/escrita")) {
-            // Para leitura/escrita, abrir ambos os stream
-
+        // Para leitura/escrita, abrir ambos os stream
+        else if (modoDeLeitura.equals("leitura/escrita")) {
             if (file.exists()){
-            // Verifica se o arquivo existe
-
                inputStream = new ObjectInputStream(new FileInputStream(file));
-
             }
-
             outputStream =  new ObjectOutputStream(new FileOutputStream(file, true));
+        }
 
-        } else{
-
+        else {
             throw new IllegalArgumentException();
-
         }
     }
 
@@ -59,7 +51,7 @@ public class ArquivoCliente implements ArquivoSequencial<Cliente> {
                 registros.add(cliente);
             }
         } catch (EOFException e) {
-
+            System.out.printf(e.getMessage());
         }
 
         return registros;

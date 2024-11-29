@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.OrdenacaoExternaBuffer;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -11,7 +12,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 public class ClienteGUI2 extends JFrame {
-    private final int TAMANHO_BUFFER = 10000;
+    private final int TAMANHO_BUFFER = 10;
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -29,26 +30,12 @@ public class ClienteGUI2 extends JFrame {
         criarInterface();
     }
 
-    private void carregarArquivo(){
-        JFileChooser fileChooser = new JFileChooser();
-        int retorno = fileChooser.showOpenDialog(this);
-        if (retorno == JFileChooser.APPROVE_OPTION){
-            arquivoSelecionado = fileChooser.getSelectedFile().getAbsolutePath();
-            bufferDeClientes.associaBuffer(new ArquivoCliente());
-            bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado); // Passa o nome do arquivo aqui
-            registrosCarregados = 0; // Reseta o contador
-            tableModel.setRowCount(0); // Limpa a tabela
-            carregarMaisClientes(); // Carrega os primeiros clientes
-            arquivoCarregado = true; // Marca que o arquivo foi carregado
-        }
-    }
-
     private void carregarMaisClientes() {
-        Cliente[] clientes = bufferDeClientes.proximosClientes(TAMANHO_BUFFER); // Chama o método com o tamanho do buffer
-        if (clientes != null && clientes.length > 0){
-            for(Cliente cliente : clientes){
-                if(cliente != null){
-                    tableModel.addRow(new Object[]{
+        Cliente[] clientes = bufferDeClientes.proximosClientes(TAMANHO_BUFFER); // Chama o metodo com o tamanho do buffer
+        if (clientes != null && clientes.length > 0) {
+            for (Cliente cliente : clientes) {
+                if (cliente != null) {
+                    tableModel.addRow(new Object[] {
                             tableModel.getRowCount() + 1,
                             cliente.getNome(),
                             cliente.getSobrenome(),
@@ -62,19 +49,36 @@ public class ClienteGUI2 extends JFrame {
         }
     }
 
-    private void carregarMaisClientesOrdenados() {
-        Cliente[] clientes = bufferDeClientes.proximosClientes(TAMANHO_BUFFER);
-        if (clientes != null && clientes.length > 0) {
-            // Ordena alfabeticamente o bloco
-            Arrays.sort(clientes, Comparator.comparing(Cliente::getNome));
+    private void carregarArquivo() {
+        JFileChooser fileChooser = new JFileChooser();
+        int retorno = fileChooser.showOpenDialog(this);
+
+        if (retorno == JFileChooser.APPROVE_OPTION) {
+            arquivoSelecionado = fileChooser.getSelectedFile().getAbsolutePath();
+            bufferDeClientes.associaBuffer(new ArquivoCliente());
+            bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado); // Passa o nome do arquivo aqui
+            registrosCarregados = 0; // Reseta o contador
+            tableModel.setRowCount(0); // Limpa a tabela
+            carregarMaisClientes(); // Carrega os primeiros clientes
+            arquivoCarregado = true; // Marca que o arquivo foi carregado
         }
-        registrosCarregados += clientes.length;
+    }
+
+    // Ordena o arquivo em ordem alfabética e o carrega na interface
+    private void carregarMaisClientesOrdenados() {
+        OrdenacaoExternaBuffer addBuff = new OrdenacaoExternaBuffer();
     }
 
 
     private void criarInterface() {
         JPanel panel = new JPanel(new BorderLayout());
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10,10));
+
         JButton btnCarregar = new JButton("Carregar Clientes");
+        JButton btnAlfabetica = new JButton("Ordem Alfabetica");
+        JButton btnPesquisar = new JButton("Pesquisar");
+        JButton btnInserir = new JButton("Inserir Cliente");
+        JButton btnRemover = new JButton("Remover Cliente");
         tableModel = new DefaultTableModel(
                 new String[]{
                     "#",
@@ -108,7 +112,19 @@ public class ClienteGUI2 extends JFrame {
             }
         });
 
-        panel.add(btnCarregar, BorderLayout.NORTH);
+        btnAlfabetica.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                carregarMaisClientesOrdenados();
+            }
+        });
+
+        btnPanel.add(btnCarregar);
+        btnPanel.add(btnAlfabetica);
+        btnPanel.add(btnPesquisar);
+        btnPanel.add(btnInserir);
+        btnPanel.add(btnRemover);
+        panel.add(btnPanel, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
         add(panel);
     }

@@ -10,7 +10,7 @@ public class BufferDeClientes implements Buffer<Cliente> {
     
     private final int TAMANHO_BUFFER = 100;
     
-    private ArquivoSequencial<Cliente> arquivoSequencial;
+    public ArquivoSequencial<Cliente> arquivoSequencial;
     private Queue<Cliente> buffer;
     private String modo;
     
@@ -23,7 +23,6 @@ public class BufferDeClientes implements Buffer<Cliente> {
     public void associaBuffer(ArquivoSequencial<Cliente> arquivoSequencial){
         this.arquivoSequencial = arquivoSequencial;
     }
-
 
     @Override
     public void inicializaBuffer(String modo, String nomeArquivo){

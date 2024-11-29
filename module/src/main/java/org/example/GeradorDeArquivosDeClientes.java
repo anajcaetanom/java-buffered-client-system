@@ -26,6 +26,19 @@ public class GeradorDeArquivosDeClientes {
         return new Cliente(nome, sobrenome, endereco, telefone, creditScore);
     }
 
+    public void gerarArquivoClientesOrdenados() {
+        String nomeArquivo = "clientes_ordenados";
+
+        try {
+            arquivoCliente.abrirArquivo(nomeArquivo, "escrita", Cliente.class);
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public void gerarArquivosClientes(String nomeArquivo, int qtdClientes) {
         try {
             arquivoCliente.abrirArquivo(nomeArquivo, "escrita", Cliente.class);
