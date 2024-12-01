@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class GeradorDeArquivosDeClientes {
-    private final ArquivoCliente arquivoCliente;
+    public final ArquivoCliente arquivoCliente;
     private final Faker faker;
 
     public GeradorDeArquivosDeClientes() {
@@ -26,18 +26,6 @@ public class GeradorDeArquivosDeClientes {
         return new Cliente(nome, sobrenome, endereco, telefone, creditScore);
     }
 
-    public void gerarArquivoClientesOrdenados() {
-        String nomeArquivo = "clientes_ordenados";
-
-        try {
-            arquivoCliente.abrirArquivo(nomeArquivo, "escrita", Cliente.class);
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
 
     public void gerarArquivosClientes(String nomeArquivo, int qtdClientes) {
         try {

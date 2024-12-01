@@ -2,7 +2,7 @@ package org.example;
 
 import java.io.Serializable;
 
-public class Cliente implements Serializable {
+public class Cliente implements Serializable, Comparable<Cliente> {
     private static final long serialVersionUID = 1L;
 
     private String nome;
@@ -77,5 +77,10 @@ public class Cliente implements Serializable {
                 ", telefone='" + telefone + '\'' +
                 ", creditScore=" + creditScore +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Cliente outroCliente) {
+        return this.nome.compareTo(outroCliente.getNome());
     }
 }

@@ -23,7 +23,7 @@ public class ArquivoCliente implements ArquivoSequencial<Cliente> {
             }
         }
 
-        // Inicia o arquivo em modo de leitura
+        // Inicia o arquivo em modo de escrita
         else if (modoDeLeitura.equals("escrita")) {
             outputStream = new ObjectOutputStream(new FileOutputStream(file));
         }
@@ -51,7 +51,7 @@ public class ArquivoCliente implements ArquivoSequencial<Cliente> {
                 registros.add(cliente);
             }
         } catch (EOFException e) {
-            System.out.printf(e.getMessage());
+            System.out.printf("erro");
         }
 
         return registros;

@@ -1,6 +1,5 @@
 package org.example;
 
-import org.example.OrdenacaoExternaBuffer;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -8,8 +7,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.List;
 
 public class ClienteGUI2 extends JFrame {
     private final int TAMANHO_BUFFER = 10;
@@ -20,6 +24,8 @@ public class ClienteGUI2 extends JFrame {
     private int registrosCarregados = 0;
     private String arquivoSelecionado;
     private boolean arquivoCarregado = false;
+
+    private List<String> blocos = new ArrayList<>();
 
     public ClienteGUI2() {
         setTitle("Gerenciamento de Clientes");
@@ -49,6 +55,87 @@ public class ClienteGUI2 extends JFrame {
         }
     }
 
+
+    private void ordenaClientes() {
+        // verifica se o arquivo a ser ordenado já foi selecionado antes no "Carregar Clientes",
+        // se não, abre a janelinha pra selecionar
+        if (arquivoSelecionado == null) {
+            JFileChooser fileChooser = new JFileChooser();
+            int retorno = fileChooser.showOpenDialog(this);
+
+            if (retorno == JFileChooser.APPROVE_OPTION) {
+                arquivoSelecionado = fileChooser.getSelectedFile().getAbsolutePath();
+            }
+        }
+
+        GeradorDeArquivosDeClientes gerador = new GeradorDeArquivosDeClientes();
+
+        bufferDeClientes.associaBuffer(new ArquivoCliente());
+        bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado);
+
+        int qtdBlocos = 1;
+        registrosCarregados = 0;
+        tableModel.setRowCount(0);
+        Cliente[] clientes = bufferDeClientes.proximosClientes(TAMANHO_BUFFER);
+
+        while (clientes != null && clientes.length > 0) {
+            // ordena o bloco
+            Arrays.sort(clientes);
+
+            // escreve o bloco num arquivo temporário
+            String nomeBloco = "bloco" + qtdBlocos;
+            try {
+                gerador.arquivoCliente.abrirArquivo(nomeBloco, "escrita", Cliente.class);
+                List<Cliente> clientesList = new ArrayList<>(Arrays.asList(clientes));
+                gerador.arquivoCliente.escreveNoArquivo(clientesList);
+                gerador.arquivoCliente.fecharArquivo();
+
+                blocos.add(nomeBloco);
+
+                // atualiza os contadores
+                qtdBlocos++;
+                registrosCarregados += clientes.length;
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            clientes = bufferDeClientes.proximosClientes(TAMANHO_BUFFER);
+        }
+    }
+
+    private void merge(GeradorDeArquivosDeClientes gerador) {
+        String nomeArquivo = "clientes_ordenados";
+
+        List<BufferedReader> leitores = new ArrayList<>();
+        List<String> linhaAtual = new ArrayList<>();
+
+        try {
+            for (String arquivo : blocos) {
+                BufferedReader leitor = new BufferedReader(new FileReader(arquivo));
+                leitores.add(leitor);
+                linhaAtual.add(leitor.readLine());
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            gerador.arquivoCliente.abrirArquivo(nomeArquivo, "escrita", Cliente.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        while (true) {
+            String menorValor = null;
+            int indice = -1;
+
+
+        }
+    }
+
     private void carregarArquivo() {
         JFileChooser fileChooser = new JFileChooser();
         int retorno = fileChooser.showOpenDialog(this);
@@ -62,11 +149,6 @@ public class ClienteGUI2 extends JFrame {
             carregarMaisClientes(); // Carrega os primeiros clientes
             arquivoCarregado = true; // Marca que o arquivo foi carregado
         }
-    }
-
-    // Ordena o arquivo em ordem alfabética e o carrega na interface
-    private void carregarMaisClientesOrdenados() {
-        OrdenacaoExternaBuffer addBuff = new OrdenacaoExternaBuffer();
     }
 
 
@@ -115,7 +197,7 @@ public class ClienteGUI2 extends JFrame {
         btnAlfabetica.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                carregarMaisClientesOrdenados();
+                ordenaClientes();
             }
         });
 
