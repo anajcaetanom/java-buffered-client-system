@@ -24,6 +24,7 @@ public class ClienteGUI2 extends JFrame {
     private int registrosCarregados = 0;
     private String arquivoSelecionado;
     private boolean arquivoCarregado = false;
+    private JTextField searchField;
 
     private List<String> blocos = new ArrayList<>();
 
@@ -166,8 +167,8 @@ public class ClienteGUI2 extends JFrame {
                     "#",
                     "Nome",
                     "Sobrenome",
-                    "Endereço",
                     "Telefone",
+                    "Endereço",
                     "CreditScore"
                 }, 0);
         table = new JTable(tableModel);
@@ -201,6 +202,86 @@ public class ClienteGUI2 extends JFrame {
             }
         });
 
+        btnPesquisar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Cria um JDialog como a mini tela
+                JDialog searchDialog = new JDialog();
+                searchDialog.setTitle("Pesquisar Cliente");
+                searchDialog.setSize(550, 200);
+                searchDialog.setLocationRelativeTo(null); // Centraliza a janela
+                searchDialog.setModal(true);
+
+                // Painel para os componentes
+                JPanel dialogPanel = new JPanel(new BorderLayout(10, 10));
+                JPanel inputPanel = new JPanel(new FlowLayout());
+                JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10)); // Usando GridLayout para organizar os botões
+
+                searchField = new JTextField(20);
+
+                // Botões para realizar a pesquisa
+                JButton btnPesquisarNome = new JButton("Pesquisar por Nome");
+                JButton btnPesquisarSobrenome = new JButton("Pesquisar por Sobrenome");
+                JButton btnPesquisarEndereco = new JButton("Pesquisar por Endereço");
+                JButton btnPesquisarTelefone = new JButton("Pesquisar por Telefone");
+                JButton btnPesquisarScore =  new JButton("Pesquisar por Score");
+
+                btnPesquisarNome.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent event) {
+                        pesquisarNomeClientes();
+                        searchDialog.dispose(); // Fecha o diálogo após a pesquisa
+                    }
+                });
+
+                btnPesquisarSobrenome.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent event) {
+                        pesquisarSobrenomeClientes();
+                        searchDialog.dispose();
+                    }
+                });
+
+                btnPesquisarEndereco.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent event) {
+                        pesquisarEnderecoClientes();
+                        searchDialog.dispose();
+                    }
+                });
+
+                btnPesquisarTelefone.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent event) {
+                        pesquisarTelefoneClientes();
+                        searchDialog.dispose();
+                    }
+                });
+
+                btnPesquisarScore.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent event) {
+                        pesquisarScoreClientes();
+                        searchDialog.dispose();
+                    }
+                });
+
+                inputPanel.add(new JLabel("Nome de Pesquisa:"));
+                inputPanel.add(searchField);
+                buttonPanel.add(btnPesquisarNome);
+                buttonPanel.add(btnPesquisarSobrenome);
+                buttonPanel.add(btnPesquisarEndereco);
+                buttonPanel.add(btnPesquisarTelefone);
+                buttonPanel.add(btnPesquisarScore);
+
+                dialogPanel.add(inputPanel, BorderLayout.CENTER);
+                dialogPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+                searchDialog.add(dialogPanel);
+                searchDialog.setVisible(true);
+            }
+        });
+
         btnPanel.add(btnCarregar);
         btnPanel.add(btnAlfabetica);
         btnPanel.add(btnPesquisar);
@@ -209,6 +290,142 @@ public class ClienteGUI2 extends JFrame {
         panel.add(btnPanel, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
         add(panel);
+    }
+
+    //                                              //
+    //                                              //
+    // Adiciona o métodos de pesquisas dos clientes //
+    //                                              //
+    //                                              //
+
+    private void pesquisarNomeClientes() {
+        String termoPesquisa = searchField.getText().trim().toLowerCase();
+        if (termoPesquisa.isEmpty()) {
+            return;
+        }
+
+        bufferDeClientes.associaBuffer(new ArquivoCliente());
+        bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado);
+
+        tableModel.setRowCount(0);
+
+        Cliente cliente;
+        while ((cliente = bufferDeClientes.proximoCliente()) != null) {
+            if (cliente.getNome().toLowerCase().contains(termoPesquisa)){
+                tableModel.addRow(new Object[]{
+                        tableModel.getRowCount() + 1,
+                        cliente.getNome(),
+                        cliente.getSobrenome(),
+                        cliente.getTelefone(),
+                        cliente.getEndereco(),
+                        cliente.getCreditScore()
+                });
+            }
+        }
+    }
+
+    private void pesquisarSobrenomeClientes() {
+        String termoPesquisa = searchField.getText().trim().toLowerCase();
+        if (termoPesquisa.isEmpty()) {
+            return;
+        }
+
+        bufferDeClientes.associaBuffer(new ArquivoCliente());
+        bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado);
+
+        tableModel.setRowCount(0);
+
+        Cliente cliente;
+        while ((cliente = bufferDeClientes.proximoCliente()) != null) {
+            if (cliente.getSobrenome().toLowerCase().startsWith(termoPesquisa)){
+                tableModel.addRow(new Object[]{
+                        tableModel.getRowCount() + 1,
+                        cliente.getNome(),
+                        cliente.getSobrenome(),
+                        cliente.getTelefone(),
+                        cliente.getEndereco(),
+                        cliente.getCreditScore()
+                });
+            }
+        }
+    }
+
+    private void pesquisarEnderecoClientes() {
+        String termoPesquisa = searchField.getText().trim().toLowerCase();
+        if (termoPesquisa.isEmpty()) {
+            return;
+        }
+
+        bufferDeClientes.associaBuffer(new ArquivoCliente());
+        bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado);
+
+        tableModel.setRowCount(0);
+
+        Cliente cliente;
+        while ((cliente = bufferDeClientes.proximoCliente()) != null) {
+            if (cliente.getEndereco().toLowerCase().contains(termoPesquisa)){
+                tableModel.addRow(new Object[]{
+                        tableModel.getRowCount() + 1,
+                        cliente.getNome(),
+                        cliente.getSobrenome(),
+                        cliente.getTelefone(),
+                        cliente.getEndereco(),
+                        cliente.getCreditScore()
+                });
+            }
+        }
+    }
+
+    private void pesquisarTelefoneClientes() {
+        String termoPesquisa = searchField.getText().trim().toLowerCase();
+        if (termoPesquisa.isEmpty()) {
+            return;
+        }
+
+        bufferDeClientes.associaBuffer(new ArquivoCliente());
+        bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado);
+
+        tableModel.setRowCount(0);
+
+        Cliente cliente;
+        while ((cliente = bufferDeClientes.proximoCliente()) != null) {
+            if (cliente.getTelefone().toLowerCase().startsWith(termoPesquisa)){
+                tableModel.addRow(new Object[]{
+                        tableModel.getRowCount() + 1,
+                        cliente.getNome(),
+                        cliente.getSobrenome(),
+                        cliente.getTelefone(),
+                        cliente.getEndereco(),
+                        cliente.getCreditScore()
+                });
+            }
+        }
+    }
+    private void pesquisarScoreClientes() {
+        String termoPesquisa = searchField.getText().trim().toLowerCase();
+        if (termoPesquisa.isEmpty()) {
+            return;
+        }
+
+        bufferDeClientes.associaBuffer(new ArquivoCliente());
+        bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado);
+
+        tableModel.setRowCount(0);
+
+        Cliente cliente;
+        while ((cliente = bufferDeClientes.proximoCliente()) != null) {
+            String scoreCliente = String.valueOf(cliente.getCreditScore());
+            if (scoreCliente.toLowerCase().startsWith(termoPesquisa)){
+                tableModel.addRow(new Object[]{
+                        tableModel.getRowCount() + 1,
+                        cliente.getNome(),
+                        cliente.getSobrenome(),
+                        cliente.getTelefone(),
+                        cliente.getEndereco(),
+                        cliente.getCreditScore()
+                });
+            }
+        }
     }
 
     public static void main(String[] args) {
