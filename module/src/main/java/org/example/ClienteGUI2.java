@@ -282,6 +282,60 @@ public class ClienteGUI2 extends JFrame {
             }
         });
 
+        btnInserir.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Create a JDialog to input new client details
+                JDialog insertDialog = new JDialog();
+                insertDialog.setTitle("Inserir Novo Cliente");
+                insertDialog.setSize(400, 300);
+                insertDialog.setLocationRelativeTo(null);
+                insertDialog.setModal(true);
+
+                JPanel dialogPanel = new JPanel(new GridLayout(6, 2, 10, 10));
+                JTextField nomeField = new JTextField();
+                JTextField sobrenomeField = new JTextField();
+                JTextField enderecoField = new JTextField();
+                JTextField telefoneField = new JTextField();
+                JTextField creditScoreField = new JTextField();
+
+                dialogPanel.add(new JLabel("Nome:"));
+                dialogPanel.add(nomeField);
+                dialogPanel.add(new JLabel("Sobrenome:"));
+                dialogPanel.add(sobrenomeField);
+                dialogPanel.add(new JLabel("Endereço:"));
+                dialogPanel.add(enderecoField);
+                dialogPanel.add(new JLabel("Telefone:"));
+                dialogPanel.add(telefoneField);
+                dialogPanel.add(new JLabel("Credit Score:"));
+                dialogPanel.add(creditScoreField);
+
+                JButton btnSalvar = new JButton("Salvar");
+                btnSalvar.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        String nome = nomeField.getText();
+                        String sobrenome = sobrenomeField.getText();
+                        String endereco = enderecoField.getText();
+                        String telefone = telefoneField.getText();
+                        int creditScore = Integer.parseInt(creditScoreField.getText());
+
+                        Cliente novoCliente = new Cliente(nome, sobrenome, endereco, telefone, creditScore);
+                        inserirCliente(novoCliente);
+                        insertDialog.dispose();
+                    }
+                });
+
+                dialogPanel.add(new JLabel());
+                dialogPanel.add(btnSalvar);
+
+                insertDialog.add(dialogPanel);
+                insertDialog.setVisible(true);
+            }
+        });
+
+
+
         btnPanel.add(btnCarregar);
         btnPanel.add(btnAlfabetica);
         btnPanel.add(btnPesquisar);
@@ -290,6 +344,45 @@ public class ClienteGUI2 extends JFrame {
         panel.add(btnPanel, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
         add(panel);
+    }
+
+    //                                                  //
+    //                                                  //
+    // Adiciona o método de inserir o cliente na tabela //
+    //                                                  //
+    //                                                  //
+
+    private void inserirCliente(Cliente cliente) {
+        if (!arquivoCarregado) {
+            JOptionPane.showMessageDialog(this, "Nenhum arquivo carregado.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            // Inicializa o buffer em modo de leitura para carregar os clientes existentes
+            bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado);
+            List<Cliente> clientesExistentes = new ArrayList<>();
+            Cliente clienteExistente;
+            while ((clienteExistente = bufferDeClientes.proximoCliente()) != null) {
+                clientesExistentes.add(clienteExistente);
+            }
+            bufferDeClientes.fechaBuffer();
+
+            // Adiciona o novo cliente à lista de clientes existentes
+            clientesExistentes.add(cliente);
+
+            // Inicializa o buffer em modo de escrita para reescrever todos os clientes
+            bufferDeClientes.inicializaBuffer("escrita", arquivoSelecionado);
+            for (Cliente c : clientesExistentes) {
+                bufferDeClientes.adicionaNoBuffer(c);
+            }
+            bufferDeClientes.escreveBufferNoArquivo();
+        } catch (IllegalStateException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao adicionar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            tableModel.setRowCount(0);
+            bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado);
+        }
     }
 
     //                                              //
