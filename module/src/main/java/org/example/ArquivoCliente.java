@@ -51,7 +51,7 @@ public class ArquivoCliente implements ArquivoSequencial<Cliente> {
                 registros.add(cliente);
             }
         } catch (EOFException e) {
-            System.out.printf("erro");
+            // Continue normalmente, já que EOF é esperado
         }
 
         return registros;

@@ -7,10 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +20,7 @@ public class ClienteGUI2 extends JFrame {
     private BufferDeClientes bufferDeClientes;
     private int registrosCarregados = 0;
     private String arquivoSelecionado;
+    private String arquivoOriginal;
     private boolean arquivoCarregado = false;
     private JTextField searchField;
 
@@ -69,71 +67,110 @@ public class ClienteGUI2 extends JFrame {
             }
         }
 
-        GeradorDeArquivosDeClientes gerador = new GeradorDeArquivosDeClientes();
-
         bufferDeClientes.associaBuffer(new ArquivoCliente());
         bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado);
 
         int qtdBlocos = 1;
         registrosCarregados = 0;
         tableModel.setRowCount(0);
+
         Cliente[] clientes = bufferDeClientes.proximosClientes(TAMANHO_BUFFER);
+
+        BufferDeClientes bufferDeClientesOrdenados = new BufferDeClientes(); // outro buffer pros clientes ordenados
+        bufferDeClientesOrdenados.associaBuffer(new ArquivoCliente());
 
         while (clientes != null && clientes.length > 0) {
             // ordena o bloco
             Arrays.sort(clientes);
 
-            // escreve o bloco num arquivo temporário
+            // inicializa arquivo temporário
             String nomeBloco = "bloco" + qtdBlocos;
-            try {
-                gerador.arquivoCliente.abrirArquivo(nomeBloco, "escrita", Cliente.class);
-                List<Cliente> clientesList = new ArrayList<>(Arrays.asList(clientes));
-                gerador.arquivoCliente.escreveNoArquivo(clientesList);
-                gerador.arquivoCliente.fecharArquivo();
+            bufferDeClientesOrdenados.inicializaBuffer("escrita", nomeBloco);
 
-                blocos.add(nomeBloco);
-
-                // atualiza os contadores
-                qtdBlocos++;
-                registrosCarregados += clientes.length;
-
-            } catch (IOException e) {
-                e.printStackTrace();
+            // adiciona os clientes ordenados no buffer de escrita
+            for (Cliente cliente : clientes) {
+                bufferDeClientesOrdenados.adicionaNoBuffer(cliente);
             }
 
+            // escreve o bloco no arquivo temporário
+            bufferDeClientesOrdenados.escreveBufferNoArquivo();
+            bufferDeClientesOrdenados.fechaBuffer();
+
+            blocos.add(nomeBloco); // adiciona o nome do bloco na array que vai ser usada no merge
+
+            // atualiza os contadores e o loop
+            qtdBlocos++;
+            registrosCarregados += clientes.length;
             clientes = bufferDeClientes.proximosClientes(TAMANHO_BUFFER);
         }
     }
 
-    private void merge(GeradorDeArquivosDeClientes gerador) {
+    private void merge() {
         String nomeArquivo = "clientes_ordenados";
 
-        List<BufferedReader> leitores = new ArrayList<>();
-        List<String> linhaAtual = new ArrayList<>();
-
-        try {
-            for (String arquivo : blocos) {
-                BufferedReader leitor = new BufferedReader(new FileReader(arquivo));
-                leitores.add(leitor);
-                linhaAtual.add(leitor.readLine());
+        File arquivoFinal = new File(nomeArquivo);
+        if (arquivoFinal.exists()) {
+            if (arquivoFinal.delete()) {
+                System.out.println("arquivo deletado.");
             }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
 
-        try {
-            gerador.arquivoCliente.abrirArquivo(nomeArquivo, "escrita", Cliente.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        List<BufferDeClientes> leitores = new ArrayList<>();
+        List<Cliente> clienteAtual = new ArrayList<>();
+
+        for (String bloco : blocos) {
+            BufferDeClientes leitor = new BufferDeClientes();
+            leitor.associaBuffer(new ArquivoCliente());
+            leitor.inicializaBuffer("leitura", bloco);
+            leitores.add(leitor);
+            clienteAtual.add(leitor.proximoCliente());
         }
+
+        BufferDeClientes escritor = new BufferDeClientes();
+        escritor.associaBuffer(new ArquivoCliente());
+        escritor.inicializaBuffer("escrita", nomeArquivo);
 
         while (true) {
-            String menorValor = null;
-            int indice = -1;
+            Cliente menorValor = null;
+            int indiceMenorValor = -1;
 
+            for (int i = 0; i < leitores.size(); i++) {
+                Cliente cliente = clienteAtual.get(i);
 
+                if (cliente == null) {
+                    continue;
+                }
+
+                if (menorValor == null || cliente.compareTo(menorValor) < 0) {
+                    menorValor = cliente;
+                    indiceMenorValor = i;
+                }
+            }
+
+            if (menorValor == null) {
+                break;
+            }
+
+            escritor.adicionaNoBuffer(menorValor);
+            escritor.escreveBufferNoArquivo();
+
+            BufferDeClientes leitorMenor = leitores.get(indiceMenorValor);
+            Cliente proximoCliente = leitorMenor.proximoCliente();
+            clienteAtual.set(indiceMenorValor, proximoCliente);
+        }
+
+        for (BufferDeClientes leitor : leitores) {
+            leitor.fechaBuffer();
+        }
+
+        escritor.fechaBuffer();
+
+        // apaga os arquivos temporários (blocos)
+        for (String bloco : blocos) {
+            File file = new File(bloco);
+            if (file.exists()) {
+                file.delete();
+            }
         }
     }
 
@@ -150,6 +187,23 @@ public class ClienteGUI2 extends JFrame {
             carregarMaisClientes(); // Carrega os primeiros clientes
             arquivoCarregado = true; // Marca que o arquivo foi carregado
         }
+    }
+
+    private void carregarClientesOrdenados() {
+        arquivoOriginal = arquivoSelecionado;
+
+        String diretorio = System.getProperty("user.dir");
+        String nomeArquivo = "clientes_ordenados";
+
+        File file = new File(diretorio, nomeArquivo);
+        arquivoSelecionado = file.getAbsolutePath();
+
+        bufferDeClientes.associaBuffer(new ArquivoCliente());
+        bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado); // Passa o nome do arquivo aqui
+        registrosCarregados = 0; // Reseta o contador
+        tableModel.setRowCount(0); // Limpa a tabela
+        carregarMaisClientes(); // Carrega os primeiros clientes
+        arquivoCarregado = true; // Marca que o arquivo foi carregado
     }
 
 
@@ -199,6 +253,9 @@ public class ClienteGUI2 extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ordenaClientes();
+                merge();
+                carregarClientesOrdenados();
+                arquivoSelecionado = arquivoOriginal;
             }
         });
 

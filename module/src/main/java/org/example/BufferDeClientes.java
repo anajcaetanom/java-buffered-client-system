@@ -8,7 +8,7 @@ import java.util.Queue;
 
 public class BufferDeClientes implements Buffer<Cliente> {
     
-    private final int TAMANHO_BUFFER = 100;
+    private final int TAMANHO_BUFFER = 10;
     
     public ArquivoSequencial<Cliente> arquivoSequencial;
     private Queue<Cliente> buffer;
@@ -27,6 +27,7 @@ public class BufferDeClientes implements Buffer<Cliente> {
     @Override
     public void inicializaBuffer(String modo, String nomeArquivo){
         this.modo = modo;
+
         try {
             if (modo.equals("leitura")) {
                 arquivoSequencial.abrirArquivo(nomeArquivo, "leitura", Cliente.class);

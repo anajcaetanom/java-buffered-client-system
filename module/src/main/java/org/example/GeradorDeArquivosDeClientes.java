@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class GeradorDeArquivosDeClientes {
-    public final ArquivoCliente arquivoCliente;
+    private final ArquivoCliente arquivoCliente;
     private final Faker faker;
 
     public GeradorDeArquivosDeClientes() {
