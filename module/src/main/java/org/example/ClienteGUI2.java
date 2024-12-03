@@ -391,7 +391,41 @@ public class ClienteGUI2 extends JFrame {
             }
         });
 
+        btnRemover.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Verificar se algum cliente foi selecionado
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow == -1) {
+                    JOptionPane.showMessageDialog(null, "Selecione um cliente para remover.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
 
+                // Obter os dados do cliente selecionado
+                String nome = (String) tableModel.getValueAt(selectedRow, 1);
+                String sobrenome = (String) tableModel.getValueAt(selectedRow, 2);
+                String telefone = (String) tableModel.getValueAt(selectedRow, 3);
+                String endereco = (String) tableModel.getValueAt(selectedRow, 4);
+                int creditScore = (int) tableModel.getValueAt(selectedRow, 5);
+                System.out.println(nome + sobrenome + telefone + endereco + creditScore);
+
+                // Criar uma instância do cliente com os dados da linha selecionada
+                Cliente clienteSelecionado = new Cliente(nome, sobrenome, endereco, telefone, creditScore);
+
+                // Confirmar remoção
+                int confirmacao = JOptionPane.showConfirmDialog(
+                        null,
+                        "Tem certeza que deseja remover o cliente selecionado?",
+                        "Confirmar Remoção",
+                        JOptionPane.YES_NO_OPTION
+                );
+
+                if (confirmacao == JOptionPane.YES_OPTION) {
+                    // Remover cliente
+                    removerCliente(clienteSelecionado);
+                }
+            }
+        });
 
         btnPanel.add(btnCarregar);
         btnPanel.add(btnAlfabetica);
@@ -401,6 +435,45 @@ public class ClienteGUI2 extends JFrame {
         panel.add(btnPanel, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
         add(panel);
+    }
+
+    //                                                  //
+    //                                                  //
+    // Adiciona o método de excluir o cliente da tabela //
+    //                                                  //
+    //                                                  //
+
+    private void removerCliente(Cliente cliente) {
+        if (!arquivoCarregado) {
+            JOptionPane.showMessageDialog(this, "Nenhum arquivo carregado.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            // Inicializa o buffer em modo de leitura para carregar os clientes existentes
+            bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado);
+            List<Cliente> clientesExistentes = new ArrayList<>();
+            Cliente clienteExistente;
+            while ((clienteExistente = bufferDeClientes.proximoCliente()) != null) {
+                // Remove o cliente
+                if(!cliente.equals(clienteExistente)){
+                    clientesExistentes.add(clienteExistente);
+                }
+            }
+            bufferDeClientes.fechaBuffer();
+
+            // Inicializa o buffer em modo de escrita para reescrever todos os clientes
+            bufferDeClientes.inicializaBuffer("escrita", arquivoSelecionado);
+            for (Cliente c : clientesExistentes) {
+                bufferDeClientes.adicionaNoBuffer(c);
+            }
+            bufferDeClientes.escreveBufferNoArquivo();
+        } catch (IllegalStateException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao adicionar cliente: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            tableModel.setRowCount(0);
+            bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado);
+        }
     }
 
     //                                                  //
@@ -577,6 +650,7 @@ public class ClienteGUI2 extends JFrame {
             }
         }
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

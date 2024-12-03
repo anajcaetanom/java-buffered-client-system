@@ -1,6 +1,7 @@
 package org.example;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Cliente implements Serializable, Comparable<Cliente> {
     private static final long serialVersionUID = 1L;
@@ -65,6 +66,23 @@ public class Cliente implements Serializable, Comparable<Cliente> {
         }
 
         this.creditScore = creditScore;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Cliente cliente = (Cliente) obj;
+        return creditScore == cliente.creditScore &&
+                nome.equals(cliente.nome) &&
+                sobrenome.equals(cliente.sobrenome) &&
+                telefone.equals(cliente.telefone) &&
+                endereco.equals(cliente.endereco);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nome, sobrenome, telefone, endereco, creditScore);
     }
 
 
