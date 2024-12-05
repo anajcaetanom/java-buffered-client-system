@@ -20,8 +20,9 @@ public class ClienteGUI2 extends JFrame {
     private BufferDeClientes bufferDeClientes;
     private int registrosCarregados = 0;
     private String arquivoSelecionado;
-    private String arquivoOriginal;
+    private String arquivoOrdenado;
     private boolean arquivoCarregado = false;
+    private boolean arquivoOrdenadoCarregado = false;
     private JTextField searchField;
 
     private List<String> blocos = new ArrayList<>();
@@ -117,7 +118,6 @@ public class ClienteGUI2 extends JFrame {
                 ordenaClientes();
                 merge();
                 carregarClientesOrdenados();
-                arquivoSelecionado = arquivoOriginal;
             }
         });
 
@@ -515,7 +515,19 @@ public class ClienteGUI2 extends JFrame {
         }
     }
 
+    //                                                  //
+    //                                                  //
+    //      Metodos da implementação de ordenação       //
+    //                                                  //
+    //                                                  //
+
     private void ordenaClientes() {
+        File arquivo = new File("clientes_ordenados");
+        if (arquivo.exists()) {
+            if (arquivo.delete()) {
+                System.out.println("deletado");
+            }
+        }
         // verifica se o arquivo a ser ordenado já foi selecionado antes no "Carregar Clientes",
         // se não, abre a janelinha pra selecionar
         if (arquivoSelecionado == null) {
@@ -527,8 +539,12 @@ public class ClienteGUI2 extends JFrame {
             }
         }
 
+        arquivoOrdenado = arquivoSelecionado;
+
+        bufferDeClientes.limparBuffer();
+
         bufferDeClientes.associaBuffer(new ArquivoCliente());
-        bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado);
+        bufferDeClientes.inicializaBuffer("leitura", arquivoOrdenado);
 
         int qtdBlocos = 1;
         registrosCarregados = 0;
@@ -538,6 +554,7 @@ public class ClienteGUI2 extends JFrame {
 
         BufferDeClientes bufferDeClientesOrdenados = new BufferDeClientes(); // outro buffer pros clientes ordenados
         bufferDeClientesOrdenados.associaBuffer(new ArquivoCliente());
+        bufferDeClientesOrdenados.limparBuffer();
 
         while (clientes != null && clientes.length > 0) {
             // ordena o bloco
@@ -563,17 +580,11 @@ public class ClienteGUI2 extends JFrame {
             registrosCarregados += clientes.length;
             clientes = bufferDeClientes.proximosClientes(TAMANHO_BUFFER);
         }
+
     }
 
     private void merge() {
         String nomeArquivo = "clientes_ordenados";
-
-        File arquivoFinal = new File(nomeArquivo);
-        if (arquivoFinal.exists()) {
-            if (arquivoFinal.delete()) {
-                System.out.println("arquivo deletado.");
-            }
-        }
 
         List<BufferDeClientes> leitores = new ArrayList<>();
         List<Cliente> clienteAtual = new ArrayList<>();
@@ -620,9 +631,11 @@ public class ClienteGUI2 extends JFrame {
         }
 
         for (BufferDeClientes leitor : leitores) {
+            leitor.limparBuffer();
             leitor.fechaBuffer();
         }
 
+        escritor.limparBuffer();
         escritor.fechaBuffer();
 
         // apaga os arquivos temporários (blocos)
@@ -635,20 +648,18 @@ public class ClienteGUI2 extends JFrame {
     }
 
     private void carregarClientesOrdenados() {
-        arquivoOriginal = arquivoSelecionado;
-
         String diretorio = System.getProperty("user.dir");
         String nomeArquivo = "clientes_ordenados";
 
         File file = new File(diretorio, nomeArquivo);
-        arquivoSelecionado = file.getAbsolutePath();
+        arquivoOrdenado = file.getAbsolutePath();
 
         bufferDeClientes.associaBuffer(new ArquivoCliente());
-        bufferDeClientes.inicializaBuffer("leitura", arquivoSelecionado); // Passa o nome do arquivo aqui
+        bufferDeClientes.inicializaBuffer("leitura", arquivoOrdenado); // Passa o nome do arquivo aqui
         registrosCarregados = 0; // Reseta o contador
         tableModel.setRowCount(0); // Limpa a tabela
         carregarMaisClientes(); // Carrega os primeiros clientes
-        arquivoCarregado = true; // Marca que o arquivo foi carregado
+        arquivoOrdenadoCarregado = true; // Marca que o arquivo foi carregado
     }
 
 

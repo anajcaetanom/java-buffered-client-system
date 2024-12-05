@@ -8,7 +8,7 @@ import java.util.Queue;
 
 public class BufferDeClientes implements Buffer<Cliente> {
     
-    private final int TAMANHO_BUFFER = 10;
+    private final int TAMANHO_BUFFER = 100;
     
     public ArquivoSequencial<Cliente> arquivoSequencial;
     private Queue<Cliente> buffer;
@@ -141,5 +141,9 @@ public class BufferDeClientes implements Buffer<Cliente> {
 
         return Arrays.copyOf(clientes, i);
     }
-    
+
+    public void limparBuffer() {
+        buffer.clear();
+        this.modo = null;
+    }
 }

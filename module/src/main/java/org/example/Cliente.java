@@ -99,6 +99,31 @@ public class Cliente implements Serializable, Comparable<Cliente> {
 
     @Override
     public int compareTo(Cliente outroCliente) {
-        return this.nome.compareTo(outroCliente.getNome());
+        // Compara pelo nome
+        int nomeComparison = this.nome.compareTo(outroCliente.getNome());
+        if (nomeComparison != 0) {
+            return nomeComparison;
+        }
+
+        // Compara pelo sobrenome se os nomes forem iguais
+        int sobrenomeComparison = this.sobrenome.compareTo(outroCliente.getSobrenome());
+        if (sobrenomeComparison != 0) {
+            return sobrenomeComparison;
+        }
+
+        // Compara pelo endereço se nome e sobrenome forem iguais
+        int enderecoComparison = this.endereco.compareTo(outroCliente.getEndereco());
+        if (enderecoComparison != 0) {
+            return enderecoComparison;
+        }
+
+        // Compara pelo número se nome, sobrenome e endereço forem iguais
+        int numeroComparison = this.telefone.compareTo(outroCliente.getTelefone());
+        if (numeroComparison != 0) {
+            return numeroComparison;
+        }
+
+        // Compara pelo score se os outros atributos forem iguais
+        return Integer.compare(this.creditScore, outroCliente.getCreditScore());
     }
 }
