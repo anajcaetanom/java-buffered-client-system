@@ -1,5 +1,4 @@
-# Trabalho Prático 2
-## Sistema de Gerenciamento de Clientes
+# Sistema de Gerenciamento de Clientes
 Professor: Matheus Conrad  
 Disciplina: Técnicas de Programação Avançada  
 Equipe: Ana Júlia Martins e Davidson Carvalho  
